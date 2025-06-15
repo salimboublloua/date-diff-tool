@@ -1,36 +1,24 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <title>حاسبة الفرق بين تاريخين</title>
-</head>
-<body>
-    <h2>احسب الفرق بين تاريخين</h2>
-    <label>التاريخ الأول:</label>
-    <input type="date" id="date1"><br><br>
-
-    <label>التاريخ الثاني:</label>
-    <input type="date" id="date2"><br><br>
-
-    <button onclick="calculateDiff()">احسب</button>
-
-    <p id="result"></p>
-
-    <script>
-        function calculateDiff() {
-            const d1 = new Date(document.getElementById('date1').value);
-            const d2 = new Date(document.getElementById('date2').value);
-
-            if (!d1 || !d2 || isNaN(d1) || isNaN(d2)) {
-                document.getElementById('result').innerText = "الرجاء إدخال تاريخين صالحين.";
-                return;
-            }
-
-            const diffTime = Math.abs(d2 - d1);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            document.getElementById('result').innerText = `الفرق بين التاريخين هو ${diffDays} يوم.`;
-        }
-    </script>
-</body>
-</html>
+<table border="1">
+  <thead>
+    <tr>
+      <th>رقم المركبة</th>
+      <th>تاريخ انتهاء التأمين</th>
+      <th>تاريخ آخر فحص</th>
+      <th>وثائق</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1234-ABC</td>
+      <td style="color: green;">2025-12-01</td>
+      <td style="color: red;">2024-06-01</td>
+      <td><a href="docs/1234-scan.pdf" target="_blank">عرض</a></td>
+    </tr>
+    <tr>
+      <td>5678-XYZ</td>
+      <td style="color: orange;">2025-07-01</td>
+      <td style="color: green;">2025-04-01</td>
+      <td><a href="docs/5678-scan.pdf" target="_blank">عرض</a></td>
+    </tr>
+  </tbody>
+</table>
