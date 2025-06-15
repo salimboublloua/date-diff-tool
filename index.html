@@ -1,24 +1,116 @@
-<table border="1">
-  <thead>
-    <tr>
-      <th>رقم المركبة</th>
-      <th>تاريخ انتهاء التأمين</th>
-      <th>تاريخ آخر فحص</th>
-      <th>وثائق</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>1234-ABC</td>
-      <td style="color: green;">2025-12-01</td>
-      <td style="color: red;">2024-06-01</td>
-      <td><a href="docs/1234-scan.pdf" target="_blank">عرض</a></td>
-    </tr>
-    <tr>
-      <td>5678-XYZ</td>
-      <td style="color: orange;">2025-07-01</td>
-      <td style="color: green;">2025-04-01</td>
-      <td><a href="docs/5678-scan.pdf" target="_blank">عرض</a></td>
-    </tr>
-  </tbody>
-</table>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة صلاحية مركبات الشركة</title>
+  <style>
+    body {
+      font-family: Arial;
+      direction: rtl;
+      padding: 20px;
+    }
+    input, button {
+      padding: 5px;
+      margin: 5px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    .expired { background-color: #ffcccc; }
+    .warning { background-color: #fff3cd; }
+    .valid { background-color: #d4edda; }
+  </style>
+</head>
+<body>
+
+  <h2>إضافة مركبة جديدة</h2>
+
+  <label>اسم المركبة:</label>
+  <input type="text" id="vehicleName"><br>
+
+  <label>الطراز:</label>
+  <input type="text" id="vehicleModel"><br>
+
+  <label>تاريخ بداية الوثيقة:</label>
+  <input type="date" id="startDate"><br>
+
+  <label>تاريخ نهاية الوثيقة:</label>
+  <input type="date" id="endDate"><br>
+
+  <button onclick="addVehicle()">➕ إضافة المركبة</button>
+
+  <h3>قائمة المركبات</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>الطراز</th>
+        <th>بداية الوثيقة</th>
+        <th>نهاية الوثيقة</th>
+        <th>الحالة</th>
+      </tr>
+    </thead>
+    <tbody id="vehicleTable">
+      <!-- المركبات ستظهر هنا -->
+    </tbody>
+  </table>
+
+  <script>
+    function addVehicle() {
+      const name = document.getElementById('vehicleName').value;
+      const model = document.getElementById('vehicleModel').value;
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+
+      if (!name || !model || !start || !end) {
+        alert("يرجى ملء جميع الحقول.");
+        return;
+      }
+
+      const now = new Date();
+      const endDate = new Date(end);
+      const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+
+      let statusClass = '';
+      let statusText = '';
+
+      if (diffDays < 0) {
+        statusClass = 'expired';
+        statusText = '❌ منتهية';
+      } else if (diffDays <= 15) {
+        statusClass = 'warning';
+        statusText = `⚠️ ${diffDays} يوم متبقٍ`;
+      } else {
+        statusClass = 'valid';
+        statusText = `✅ ${diffDays} يوم متبقٍ`;
+      }
+
+      const row = `
+        <tr class="${statusClass}">
+          <td>${name}</td>
+          <td>${model}</td>
+          <td>${start}</td>
+          <td>${end}</td>
+          <td>${statusText}</td>
+        </tr>
+      `;
+
+      document.getElementById('vehicleTable').innerHTML += row;
+
+      // مسح الحقول بعد الإضافة
+      document.getElementById('vehicleName').value = '';
+      document.getElementById('vehicleModel').value = '';
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+    }
+  </script>
+
+</body>
+</html>
