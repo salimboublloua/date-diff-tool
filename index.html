@@ -30,7 +30,7 @@
 </head>
 <body>
 
-  <h2>إضافة مركبة جديدة</h2>
+  <h2>إضافة / تعديل مركبة</h2>
 
   <label>اسم المركبة:</label>
   <input type="text" id="vehicleName"><br>
@@ -44,7 +44,7 @@
   <label>تاريخ نهاية الوثيقة:</label>
   <input type="date" id="endDate"><br>
 
-  <button onclick="addVehicle()">➕ إضافة المركبة</button>
+  <button onclick="submitVehicle()" id="mainButton">➕ إضافة المركبة</button>
 
   <h3>قائمة المركبات</h3>
   <table>
@@ -55,6 +55,7 @@
         <th>بداية الوثيقة</th>
         <th>نهاية الوثيقة</th>
         <th>الحالة</th>
+        <th>تعديل</th>
       </tr>
     </thead>
     <tbody id="vehicleTable">
@@ -63,19 +64,11 @@
   </table>
 
   <script>
-    function addVehicle() {
-      const name = document.getElementById('vehicleName').value;
-      const model = document.getElementById('vehicleModel').value;
-      const start = document.getElementById('startDate').value;
-      const end = document.getElementById('endDate').value;
+    let editIndex = -1;
 
-      if (!name || !model || !start || !end) {
-        alert("يرجى ملء جميع الحقول.");
-        return;
-      }
-
+    function calculateStatus(endDateStr) {
       const now = new Date();
-      const endDate = new Date(end);
+      const endDate = new Date(endDateStr);
       const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
 
       let statusClass = '';
@@ -92,19 +85,60 @@
         statusText = `✅ ${diffDays} يوم متبقٍ`;
       }
 
+      return { statusClass, statusText };
+    }
+
+    function submitVehicle() {
+      const name = document.getElementById('vehicleName').value;
+      const model = document.getElementById('vehicleModel').value;
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+
+      if (!name || !model || !start || !end) {
+        alert("يرجى ملء جميع الحقول.");
+        return;
+      }
+
+      const status = calculateStatus(end);
+
       const row = `
-        <tr class="${statusClass}">
+        <tr class="${status.statusClass}">
           <td>${name}</td>
           <td>${model}</td>
           <td>${start}</td>
           <td>${end}</td>
-          <td>${statusText}</td>
+          <td>${status.statusText}</td>
+          <td><button onclick="editVehicle(this)">✏️ تعديل</button></td>
         </tr>
       `;
 
-      document.getElementById('vehicleTable').innerHTML += row;
+      const table = document.getElementById('vehicleTable');
 
-      // مسح الحقول بعد الإضافة
+      if (editIndex === -1) {
+        table.innerHTML += row;
+      } else {
+        table.rows[editIndex].outerHTML = row;
+        editIndex = -1;
+        document.getElementById('mainButton').innerText = "➕ إضافة المركبة";
+      }
+
+      clearForm();
+    }
+
+    function editVehicle(btn) {
+      const row = btn.parentElement.parentElement;
+      editIndex = row.rowIndex - 1;
+
+      const cells = row.getElementsByTagName('td');
+      document.getElementById('vehicleName').value = cells[0].innerText;
+      document.getElementById('vehicleModel').value = cells[1].innerText;
+      document.getElementById('startDate').value = cells[2].innerText;
+      document.getElementById('endDate').value = cells[3].innerText;
+
+      document.getElementById('mainButton').innerText = "💾 حفظ التعديل";
+    }
+
+    function clearForm() {
       document.getElementById('vehicleName').value = '';
       document.getElementById('vehicleModel').value = '';
       document.getElementById('startDate').value = '';
