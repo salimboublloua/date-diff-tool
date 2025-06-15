@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>حاسبة الفرق بين تاريخين</title>
+</head>
+<body>
+    <h2>احسب الفرق بين تاريخين</h2>
+    <label>التاريخ الأول:</label>
+    <input type="date" id="date1"><br><br>
+
+    <label>التاريخ الثاني:</label>
+    <input type="date" id="date2"><br><br>
+
+    <button onclick="calculateDiff()">احسب</button>
+
+    <p id="result"></p>
+
+    <script>
+        function calculateDiff() {
+            const d1 = new Date(document.getElementById('date1').value);
+            const d2 = new Date(document.getElementById('date2').value);
+
+            if (!d1 || !d2 || isNaN(d1) || isNaN(d2)) {
+                document.getElementById('result').innerText = "الرجاء إدخال تاريخين صالحين.";
+                return;
+            }
+
+            const diffTime = Math.abs(d2 - d1);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            document.getElementById('result').innerText = `الفرق بين التاريخين هو ${diffDays} يوم.`;
+        }
+    </script>
+</body>
+</html>
