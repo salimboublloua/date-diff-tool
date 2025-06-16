@@ -26,6 +26,11 @@
     .expired { background-color: #ffcccc; }
     .warning { background-color: #fff3cd; }
     .valid { background-color: #d4edda; }
+    #companyFilters button {
+      padding: 5px 10px;
+      margin: 2px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -57,11 +62,9 @@
   <button onclick="submitVehicle()" id="mainButton">➕ إضافة الوثيقة</button>
 
   <h3>قائمة الوثائق</h3>
+
+  <!-- ✅ أزرار فلترة الشركات -->
   <div id="companyFilters" style="margin-bottom: 15px;"></div>
-  <label>🔍 فرز حسب الشركة:</label>
-  <select id="filterCompany" onchange="renderTable()">
-    <option value="all">عرض الكل</option>
-  </select>
 
   <table>
     <thead>
@@ -96,27 +99,28 @@
     }
 
     function renderTable(companyFilter = "all") {
-  const table = document.getElementById('vehicleTable');
-  table.innerHTML = '';
+      const table = document.getElementById('vehicleTable');
+      table.innerHTML = '';
 
-  documents.forEach((doc, index) => {
-    if (companyFilter !== 'all' && doc.company !== companyFilter) return;
+      documents.forEach((doc, index) => {
+        if (companyFilter !== 'all' && doc.company !== companyFilter) return;
 
-    const status = calculateStatus(doc.end);
-    table.innerHTML += `
-      <tr class="${status.statusClass}">
-        <td>${doc.name}</td>
-        <td>${doc.model}</td>
-        <td>${doc.company}</td>
-        <td>${doc.type}</td>
-        <td>${doc.start}</td>
-        <td>${doc.end}</td>
-        <td>${status.statusText}</td>
-        <td><button onclick="editVehicle(${index})">✏️ تعديل</button></td>
-      </tr>
-    `;
-  });
-}
+        const status = calculateStatus(doc.end);
+        table.innerHTML += `
+          <tr class="${status.statusClass}">
+            <td>${doc.name}</td>
+            <td>${doc.model}</td>
+            <td>${doc.company}</td>
+            <td>${doc.type}</td>
+            <td>${doc.start}</td>
+            <td>${doc.end}</td>
+            <td>${status.statusText}</td>
+            <td><button onclick="editVehicle(${index})">✏️ تعديل</button></td>
+          </tr>
+        `;
+      });
+    }
+
     function submitVehicle() {
       const name = document.getElementById('vehicleName').value;
       const model = document.getElementById('vehicleModel').value;
@@ -180,51 +184,45 @@
 
     function loadCompaniesToSelect() {
       const select = document.getElementById("companySelect");
-      const filter = document.getElementById("filterCompany");
       const data = localStorage.getItem("companies");
       if (!data) return;
       const companies = JSON.parse(data);
 
       companies.forEach(name => {
-        const option1 = document.createElement("option");
-        option1.value = name;
-        option1.text = name;
-        select.appendChild(option1);
-
-        const option2 = document.createElement("option");
-        option2.value = name;
-        option2.text = name;
-        filter.appendChild(option2);
+        const option = document.createElement("option");
+        option.value = name;
+        option.text = name;
+        select.appendChild(option);
       });
     }
+
     function renderCompanyFilters() {
-  const container = document.getElementById('companyFilters');
-  container.innerHTML = '';
+      const container = document.getElementById('companyFilters');
+      container.innerHTML = '';
 
-  // زر "عرض الكل"
-  const allBtn = document.createElement('button');
-  allBtn.textContent = "عرض الكل";
-  allBtn.onclick = () => renderTable("all");
-  container.appendChild(allBtn);
+      const allBtn = document.createElement('button');
+      allBtn.textContent = "عرض الكل";
+      allBtn.onclick = () => renderTable("all");
+      container.appendChild(allBtn);
 
-  // باقي الشركات
-  const data = localStorage.getItem("companies");
-  if (!data) return;
-  const companies = JSON.parse(data);
+      const data = localStorage.getItem("companies");
+      if (!data) return;
+      const companies = JSON.parse(data);
 
-  companies.forEach(name => {
-    const btn = document.createElement("button");
-    btn.textContent = name;
-    btn.style.margin = "3px";
-    btn.onclick = () => renderTable(name);
-    container.appendChild(btn);
-  });
-}
-   window.onload = function () {
-  loadFromStorage();
-  loadCompaniesToSelect();
-  renderCompanyFilters(); // ← هذا السطر الجديد
-};
+      companies.forEach(name => {
+        const btn = document.createElement("button");
+        btn.textContent = name;
+        btn.style.margin = "3px";
+        btn.onclick = () => renderTable(name);
+        container.appendChild(btn);
+      });
+    }
+
+    window.onload = function () {
+      loadFromStorage();
+      loadCompaniesToSelect();
+      renderCompanyFilters();
+    };
   </script>
 
 </body>
