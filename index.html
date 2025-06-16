@@ -57,7 +57,7 @@
   <button onclick="submitVehicle()" id="mainButton">➕ إضافة الوثيقة</button>
 
   <h3>قائمة الوثائق</h3>
-
+  <div id="companyFilters" style="margin-bottom: 15px;"></div>
   <label>🔍 فرز حسب الشركة:</label>
   <select id="filterCompany" onchange="renderTable()">
     <option value="all">عرض الكل</option>
@@ -95,30 +95,28 @@
       return { statusClass: 'valid', statusText: `✅ ${diffDays} يوم متبقٍ` };
     }
 
-    function renderTable() {
-      const table = document.getElementById('vehicleTable');
-      const filter = document.getElementById('filterCompany')?.value || "all";
-      table.innerHTML = '';
+    function renderTable(companyFilter = "all") {
+  const table = document.getElementById('vehicleTable');
+  table.innerHTML = '';
 
-      documents.forEach((doc, index) => {
-        if (filter !== 'all' && doc.company !== filter) return;
+  documents.forEach((doc, index) => {
+    if (companyFilter !== 'all' && doc.company !== companyFilter) return;
 
-        const status = calculateStatus(doc.end);
-        table.innerHTML += `
-          <tr class="${status.statusClass}">
-            <td>${doc.name}</td>
-            <td>${doc.model}</td>
-            <td>${doc.company}</td>
-            <td>${doc.type}</td>
-            <td>${doc.start}</td>
-            <td>${doc.end}</td>
-            <td>${status.statusText}</td>
-            <td><button onclick="editVehicle(${index})">✏️ تعديل</button></td>
-          </tr>
-        `;
-      });
-    }
-
+    const status = calculateStatus(doc.end);
+    table.innerHTML += `
+      <tr class="${status.statusClass}">
+        <td>${doc.name}</td>
+        <td>${doc.model}</td>
+        <td>${doc.company}</td>
+        <td>${doc.type}</td>
+        <td>${doc.start}</td>
+        <td>${doc.end}</td>
+        <td>${status.statusText}</td>
+        <td><button onclick="editVehicle(${index})">✏️ تعديل</button></td>
+      </tr>
+    `;
+  });
+}
     function submitVehicle() {
       const name = document.getElementById('vehicleName').value;
       const model = document.getElementById('vehicleModel').value;
@@ -199,11 +197,34 @@
         filter.appendChild(option2);
       });
     }
+    function renderCompanyFilters() {
+  const container = document.getElementById('companyFilters');
+  container.innerHTML = '';
 
-    window.onload = function () {
-      loadFromStorage();
-      loadCompaniesToSelect();
-    };
+  // زر "عرض الكل"
+  const allBtn = document.createElement('button');
+  allBtn.textContent = "عرض الكل";
+  allBtn.onclick = () => renderTable("all");
+  container.appendChild(allBtn);
+
+  // باقي الشركات
+  const data = localStorage.getItem("companies");
+  if (!data) return;
+  const companies = JSON.parse(data);
+
+  companies.forEach(name => {
+    const btn = document.createElement("button");
+    btn.textContent = name;
+    btn.style.margin = "3px";
+    btn.onclick = () => renderTable(name);
+    container.appendChild(btn);
+  });
+}
+   window.onload = function () {
+  loadFromStorage();
+  loadCompaniesToSelect();
+  renderCompanyFilters(); // ← هذا السطر الجديد
+};
   </script>
 
 </body>
