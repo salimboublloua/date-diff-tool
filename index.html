@@ -2,14 +2,14 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>إدارة صلاحية مركبات الشركة</title>
+  <title>إدارة صلاحية وثائق المركبات</title>
   <style>
     body {
       font-family: Arial;
       direction: rtl;
       padding: 20px;
     }
-    input, button {
+    input, select, button {
       padding: 5px;
       margin: 5px;
     }
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-  <h2>إضافة / تعديل مركبة</h2>
+  <h2>إضافة / تعديل وثيقة مركبة</h2>
 
   <label>اسم المركبة:</label>
   <input type="text" id="vehicleName"><br>
@@ -38,20 +38,27 @@
   <label>الطراز:</label>
   <input type="text" id="vehicleModel"><br>
 
+  <label>نوع الوثيقة:</label>
+  <select id="docType">
+    <option value="Assurance">Assurance</option>
+    <option value="Scaner">Scaner</option>
+  </select><br>
+
   <label>تاريخ بداية الوثيقة:</label>
   <input type="date" id="startDate"><br>
 
   <label>تاريخ نهاية الوثيقة:</label>
   <input type="date" id="endDate"><br>
 
-  <button onclick="submitVehicle()" id="mainButton">➕ إضافة المركبة</button>
+  <button onclick="submitVehicle()" id="mainButton">➕ إضافة الوثيقة</button>
 
-  <h3>قائمة المركبات</h3>
+  <h3>قائمة الوثائق</h3>
   <table>
     <thead>
       <tr>
-        <th>الاسم</th>
+        <th>المركبة</th>
         <th>الطراز</th>
+        <th>الوثيقة</th>
         <th>بداية الوثيقة</th>
         <th>نهاية الوثيقة</th>
         <th>الحالة</th>
@@ -59,12 +66,12 @@
       </tr>
     </thead>
     <tbody id="vehicleTable">
-      <!-- المركبات ستظهر هنا -->
+      <!-- الوثائق ستظهر هنا -->
     </tbody>
   </table>
 
   <script>
-    let vehicles = [];
+    let documents = [];
     let editIndex = -1;
 
     function calculateStatus(endDateStr) {
@@ -81,14 +88,15 @@
       const table = document.getElementById('vehicleTable');
       table.innerHTML = '';
 
-      vehicles.forEach((v, index) => {
-        const status = calculateStatus(v.end);
+      documents.forEach((doc, index) => {
+        const status = calculateStatus(doc.end);
         table.innerHTML += `
           <tr class="${status.statusClass}">
-            <td>${v.name}</td>
-            <td>${v.model}</td>
-            <td>${v.start}</td>
-            <td>${v.end}</td>
+            <td>${doc.name}</td>
+            <td>${doc.model}</td>
+            <td>${doc.type}</td>
+            <td>${doc.start}</td>
+            <td>${doc.end}</td>
             <td>${status.statusText}</td>
             <td><button onclick="editVehicle(${index})">✏️ تعديل</button></td>
           </tr>
@@ -99,22 +107,23 @@
     function submitVehicle() {
       const name = document.getElementById('vehicleName').value;
       const model = document.getElementById('vehicleModel').value;
+      const type = document.getElementById('docType').value;
       const start = document.getElementById('startDate').value;
       const end = document.getElementById('endDate').value;
 
-      if (!name || !model || !start || !end) {
+      if (!name || !model || !start || !end || !type) {
         alert("يرجى ملء جميع الحقول.");
         return;
       }
 
-      const vehicle = { name, model, start, end };
+      const doc = { name, model, type, start, end };
 
       if (editIndex === -1) {
-        vehicles.push(vehicle);
+        documents.push(doc);
       } else {
-        vehicles[editIndex] = vehicle;
+        documents[editIndex] = doc;
         editIndex = -1;
-        document.getElementById('mainButton').innerText = "➕ إضافة المركبة";
+        document.getElementById('mainButton').innerText = "➕ إضافة الوثيقة";
       }
 
       saveToStorage();
@@ -123,11 +132,12 @@
     }
 
     function editVehicle(index) {
-      const v = vehicles[index];
-      document.getElementById('vehicleName').value = v.name;
-      document.getElementById('vehicleModel').value = v.model;
-      document.getElementById('startDate').value = v.start;
-      document.getElementById('endDate').value = v.end;
+      const doc = documents[index];
+      document.getElementById('vehicleName').value = doc.name;
+      document.getElementById('vehicleModel').value = doc.model;
+      document.getElementById('docType').value = doc.type;
+      document.getElementById('startDate').value = doc.start;
+      document.getElementById('endDate').value = doc.end;
       editIndex = index;
       document.getElementById('mainButton').innerText = "💾 حفظ التعديل";
     }
@@ -135,23 +145,23 @@
     function clearForm() {
       document.getElementById('vehicleName').value = '';
       document.getElementById('vehicleModel').value = '';
+      document.getElementById('docType').value = 'Assurance';
       document.getElementById('startDate').value = '';
       document.getElementById('endDate').value = '';
     }
 
     function saveToStorage() {
-      localStorage.setItem("vehicles", JSON.stringify(vehicles));
+      localStorage.setItem("vehicleDocs", JSON.stringify(documents));
     }
 
     function loadFromStorage() {
-      const data = localStorage.getItem("vehicles");
+      const data = localStorage.getItem("vehicleDocs");
       if (data) {
-        vehicles = JSON.parse(data);
+        documents = JSON.parse(data);
         renderTable();
       }
     }
 
-    // عند فتح الصفحة
     window.onload = loadFromStorage;
   </script>
 
