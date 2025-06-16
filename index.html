@@ -8,6 +8,7 @@
       font-family: Arial;
       direction: rtl;
       padding: 20px;
+      background-color: #f9f9f9;
     }
     input, select, button {
       padding: 5px;
@@ -17,6 +18,7 @@
       border-collapse: collapse;
       width: 100%;
       margin-top: 20px;
+      background-color: white;
     }
     th, td {
       border: 1px solid #ccc;
@@ -26,10 +28,29 @@
     .expired { background-color: #ffcccc; }
     .warning { background-color: #fff3cd; }
     .valid { background-color: #d4edda; }
+
+    /* أزرار الفلترة */
+    #companyFilters {
+      margin: 15px 0;
+    }
     #companyFilters button {
-      padding: 5px 10px;
-      margin: 2px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      color: #333;
+      padding: 6px 12px;
+      margin: 3px;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    #companyFilters button:hover {
+      background-color: #d0eaff;
+      color: #000;
+    }
+    #companyFilters button.active {
+      background-color: #ffeb99;
+      font-weight: bold;
+      border-color: #999966;
     }
   </style>
 </head>
@@ -64,7 +85,7 @@
   <h3>قائمة الوثائق</h3>
 
   <!-- ✅ أزرار فلترة الشركات -->
-  <div id="companyFilters" style="margin-bottom: 15px;"></div>
+  <div id="companyFilters"></div>
 
   <table>
     <thead>
@@ -145,7 +166,8 @@
       }
 
       saveToStorage();
-      renderTable();
+      renderTable(currentFilter);
+      renderCompanyFilters(currentFilter);
       clearForm();
     }
 
@@ -196,13 +218,20 @@
       });
     }
 
-    function renderCompanyFilters() {
+    let currentFilter = "all";
+
+    function renderCompanyFilters(selected = "all") {
+      currentFilter = selected;
       const container = document.getElementById('companyFilters');
       container.innerHTML = '';
 
       const allBtn = document.createElement('button');
       allBtn.textContent = "عرض الكل";
-      allBtn.onclick = () => renderTable("all");
+      if (selected === "all") allBtn.classList.add("active");
+      allBtn.onclick = () => {
+        renderTable("all");
+        renderCompanyFilters("all");
+      };
       container.appendChild(allBtn);
 
       const data = localStorage.getItem("companies");
@@ -212,8 +241,11 @@
       companies.forEach(name => {
         const btn = document.createElement("button");
         btn.textContent = name;
-        btn.style.margin = "3px";
-        btn.onclick = () => renderTable(name);
+        if (selected === name) btn.classList.add("active");
+        btn.onclick = () => {
+          renderTable(name);
+          renderCompanyFilters(name);
+        };
         container.appendChild(btn);
       });
     }
