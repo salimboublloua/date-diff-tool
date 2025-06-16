@@ -31,13 +31,16 @@
 <body>
 
   <h2>إضافة / تعديل وثيقة مركبة</h2>
-  <button onclick="window.location.href='companies.html'">🏢 إدارة الشركات</button>
+  <button onclick="window.location.href='companies.html'">🏢 إدارة الشركات</button><br><br>
 
   <label>اسم المركبة:</label>
   <input type="text" id="vehicleName"><br>
 
   <label>الطراز:</label>
   <input type="text" id="vehicleModel"><br>
+
+  <label>الشركة التابعة:</label>
+  <select id="companySelect"></select><br>
 
   <label>نوع الوثيقة:</label>
   <select id="docType">
@@ -59,6 +62,7 @@
       <tr>
         <th>المركبة</th>
         <th>الطراز</th>
+        <th>الشركة</th>
         <th>الوثيقة</th>
         <th>بداية الوثيقة</th>
         <th>نهاية الوثيقة</th>
@@ -95,6 +99,7 @@
           <tr class="${status.statusClass}">
             <td>${doc.name}</td>
             <td>${doc.model}</td>
+            <td>${doc.company}</td>
             <td>${doc.type}</td>
             <td>${doc.start}</td>
             <td>${doc.end}</td>
@@ -108,16 +113,17 @@
     function submitVehicle() {
       const name = document.getElementById('vehicleName').value;
       const model = document.getElementById('vehicleModel').value;
+      const company = document.getElementById('companySelect').value;
       const type = document.getElementById('docType').value;
       const start = document.getElementById('startDate').value;
       const end = document.getElementById('endDate').value;
 
-      if (!name || !model || !start || !end || !type) {
+      if (!name || !model || !company || !start || !end || !type) {
         alert("يرجى ملء جميع الحقول.");
         return;
       }
 
-      const doc = { name, model, type, start, end };
+      const doc = { name, model, company, type, start, end };
 
       if (editIndex === -1) {
         documents.push(doc);
@@ -136,6 +142,7 @@
       const doc = documents[index];
       document.getElementById('vehicleName').value = doc.name;
       document.getElementById('vehicleModel').value = doc.model;
+      document.getElementById('companySelect').value = doc.company;
       document.getElementById('docType').value = doc.type;
       document.getElementById('startDate').value = doc.start;
       document.getElementById('endDate').value = doc.end;
@@ -146,6 +153,7 @@
     function clearForm() {
       document.getElementById('vehicleName').value = '';
       document.getElementById('vehicleModel').value = '';
+      document.getElementById('companySelect').selectedIndex = 0;
       document.getElementById('docType').value = 'Assurance';
       document.getElementById('startDate').value = '';
       document.getElementById('endDate').value = '';
@@ -163,7 +171,23 @@
       }
     }
 
-    window.onload = loadFromStorage;
+    function loadCompaniesToSelect() {
+      const select = document.getElementById("companySelect");
+      const data = localStorage.getItem("companies");
+      if (!data) return;
+      const companies = JSON.parse(data);
+      companies.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.text = name;
+        select.appendChild(option);
+      });
+    }
+
+    window.onload = function () {
+      loadFromStorage();
+      loadCompaniesToSelect();
+    };
   </script>
 
 </body>
