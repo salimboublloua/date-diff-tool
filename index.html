@@ -57,6 +57,12 @@
   <button onclick="submitVehicle()" id="mainButton">➕ إضافة الوثيقة</button>
 
   <h3>قائمة الوثائق</h3>
+
+  <label>🔍 فرز حسب الشركة:</label>
+  <select id="filterCompany" onchange="renderTable()">
+    <option value="all">عرض الكل</option>
+  </select>
+
   <table>
     <thead>
       <tr>
@@ -91,9 +97,12 @@
 
     function renderTable() {
       const table = document.getElementById('vehicleTable');
+      const filter = document.getElementById('filterCompany')?.value || "all";
       table.innerHTML = '';
 
       documents.forEach((doc, index) => {
+        if (filter !== 'all' && doc.company !== filter) return;
+
         const status = calculateStatus(doc.end);
         table.innerHTML += `
           <tr class="${status.statusClass}">
@@ -173,14 +182,21 @@
 
     function loadCompaniesToSelect() {
       const select = document.getElementById("companySelect");
+      const filter = document.getElementById("filterCompany");
       const data = localStorage.getItem("companies");
       if (!data) return;
       const companies = JSON.parse(data);
+
       companies.forEach(name => {
-        const option = document.createElement("option");
-        option.value = name;
-        option.text = name;
-        select.appendChild(option);
+        const option1 = document.createElement("option");
+        option1.value = name;
+        option1.text = name;
+        select.appendChild(option1);
+
+        const option2 = document.createElement("option");
+        option2.value = name;
+        option2.text = name;
+        filter.appendChild(option2);
       });
     }
 
