@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة الشركات</title>
+  <style>
+    body {
+      font-family: Arial;
+      direction: rtl;
+      padding: 20px;
+    }
+    input, button {
+      padding: 5px;
+      margin: 5px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>إضافة شركة جديدة</h2>
+
+  <label>اسم الشركة:</label>
+  <input type="text" id="companyName">
+  <button onclick="addCompany()">➕ إضافة</button>
+
+  <h3>قائمة الشركات</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>اسم الشركة</th>
+        <th>حذف</th>
+      </tr>
+    </thead>
+    <tbody id="companyTable">
+      <!-- الشركات ستظهر هنا -->
+    </tbody>
+  </table>
+
+  <script>
+    let companies = [];
+
+    function renderCompanies() {
+      const table = document.getElementById("companyTable");
+      table.innerHTML = "";
+      companies.forEach((name, index) => {
+        table.innerHTML += `
+          <tr>
+            <td>${name}</td>
+            <td><button onclick="deleteCompany(${index})">🗑 حذف</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function addCompany() {
+      const name = document.getElementById("companyName").value.trim();
+      if (name === "") {
+        alert("يرجى إدخال اسم الشركة");
+        return;
+      }
+      companies.push(name);
+      saveCompanies();
+      renderCompanies();
+      document.getElementById("companyName").value = "";
+    }
+
+    function deleteCompany(index) {
+      companies.splice(index, 1);
+      saveCompanies();
+      renderCompanies();
+    }
+
+    function saveCompanies() {
+      localStorage.setItem("companies", JSON.stringify(companies));
+    }
+
+    function loadCompanies() {
+      const data = localStorage.getItem("companies");
+      if (data) {
+        companies = JSON.parse(data);
+        renderCompanies();
+      }
+    }
+
+    window.onload = loadCompanies;
+  </script>
+
+</body>
+</html>
