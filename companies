@@ -27,73 +27,75 @@
 </head>
 <body>
 
-  <h2>إضافة شركة جديدة</h2>
+<h2>إضافة شركة جديدة</h2>
+<label>اسم الشركة:</label>
+<input type="text" id="companyName">
+<button onclick="addCompany()">➕ إضافة</button>
 
-  <label>اسم الشركة:</label>
-  <input type="text" id="companyName">
-  <button onclick="addCompany()">➕ إضافة</button>
+<h3>قائمة الشركات</h3>
+<table>
+  <thead>
+    <tr>
+      <th>اسم الشركة</th>
+      <th>حذف</th>
+    </tr>
+  </thead>
+  <tbody id="companyTable"></tbody>
+</table>
 
-  <h3>قائمة الشركات</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>اسم الشركة</th>
-        <th>حذف</th>
-      </tr>
-    </thead>
-    <tbody id="companyTable">
-      <!-- الشركات ستظهر هنا -->
-    </tbody>
-  </table>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-  <script>
-    let companies = [];
+  const firebaseConfig = {
+    apiKey: "AIzaSyAha6C0o7Rhy6bztei1gtGGzMabjxNhGfE",
+    authDomain: "vehicule-docs.firebaseapp.com",
+    projectId: "vehicule-docs",
+    storageBucket: "vehicule-docs.appspot.com",
+    messagingSenderId: "971903774046",
+    appId: "1:971903774046:web:e19d7fb3b142f06686801f",
+    measurementId: "G-7KL0HL9VK3"
+  };
 
-    function renderCompanies() {
-      const table = document.getElementById("companyTable");
-      table.innerHTML = "";
-      companies.forEach((name, index) => {
-        table.innerHTML += `
-          <tr>
-            <td>${name}</td>
-            <td><button onclick="deleteCompany(${index})">🗑 حذف</button></td>
-          </tr>
-        `;
-      });
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const companiesRef = collection(db, "companies");
+
+  async function loadCompanies() {
+    const table = document.getElementById("companyTable");
+    table.innerHTML = "";
+    const snapshot = await getDocs(companiesRef);
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data.name}</td>
+        <td><button onclick="deleteCompany('${docSnap.id}')">🗑 حذف</button></td>
+      `;
+      table.appendChild(row);
+    });
+  }
+
+  async function addCompany() {
+    const input = document.getElementById("companyName");
+    const name = input.value.trim();
+    if (!name) {
+      alert("يرجى إدخال اسم الشركة");
+      return;
     }
+    await addDoc(companiesRef, { name });
+    input.value = "";
+    loadCompanies();
+  }
 
-    function addCompany() {
-      const name = document.getElementById("companyName").value.trim();
-      if (name === "") {
-        alert("يرجى إدخال اسم الشركة");
-        return;
-      }
-      companies.push(name);
-      saveCompanies();
-      renderCompanies();
-      document.getElementById("companyName").value = "";
-    }
+  async function deleteCompany(id) {
+    await deleteDoc(doc(db, "companies", id));
+    loadCompanies();
+  }
 
-    function deleteCompany(index) {
-      companies.splice(index, 1);
-      saveCompanies();
-      renderCompanies();
-    }
-
-    function saveCompanies() {
-      localStorage.setItem("companies", JSON.stringify(companies));
-    }
-
-    function loadCompanies() {
-      const data = localStorage.getItem("companies");
-      if (data) {
-        companies = JSON.parse(data);
-        renderCompanies();
-      }
-    }
-
-    window.onload = loadCompanies;
-  </script>
+  window.onload = loadCompanies;
+</script>
 
 </body>
 </html>
