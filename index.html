@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة صلاحية وثائق المركبات</title>
+  <style>
+    body { font-family: Arial; direction: rtl; padding: 20px; background-color: #f9f9f9; }
+    input, select, button { padding: 5px; margin: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; background-color: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .expired { background-color: #ffcccc; }
+    .warning { background-color: #fff3cd; }
+    .valid { background-color: #d4edda; }
+    #companyFilters { margin: 15px 0; }
+    #companyFilters button {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      color: #333;
+      padding: 6px 12px;
+      margin: 3px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    #companyFilters button:hover { background-color: #d0eaff; color: #000; }
+    #companyFilters button.active {
+      background-color: #ffeb99;
+      font-weight: bold;
+      border-color: #999966;
+    }
+  </style>
+</head>
+<body>
+
+<h2>إضافة / تعديل وثيقة مركبة</h2>
+<button onclick="window.location.href='companies.html'">🏢 إدارة الشركات</button><br><br>
+
+<label>اسم المركبة:</label><input type="text" id="vehicleName"><br>
+<label>الطراز:</label><input type="text" id="vehicleModel"><br>
+<label>الشركة التابعة:</label><select id="companySelect"></select><br>
+<label>نوع الوثيقة:</label>
+<select id="docType">
+  <option value="Assurance">Assurance</option>
+  <option value="Scaner">Scaner</option>
+</select><br>
+<label>تاريخ بداية الوثيقة:</label><input type="date" id="startDate"><br>
+<label>تاريخ نهاية الوثيقة:</label><input type="date" id="endDate"><br>
+<button onclick="submitVehicle()" id="mainButton">➕ إضافة الوثيقة</button>
+
+<h3>قائمة الوثائق</h3>
+<div id="companyFilters"></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>المركبة</th><th>الطراز</th><th>الشركة</th><th>الوثيقة</th>
+      <th>بداية الوثيقة</th><th>نهاية الوثيقة</th><th>الحالة</th><th>تعديل</th>
+    </tr>
+  </thead>
+  <tbody id="vehicleTable"></tbody>
+</table>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAha6C0o7Rhy6bztei1gtGGzMabjxNhGfE",
+    authDomain: "vehicule-docs.firebaseapp.com",
+    projectId: "vehicule-docs",
+    storageBucket: "vehicule-docs.appspot.com",
+    messagingSenderId: "971903774046",
+    appId: "1:971903774046:web:e19d7fb3b142f06686801f",
+    measurementId: "G-7KL0HL9VK3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let documents = [];
+  let editIndex = -1;
+  let currentFilter = "all";
+
+  function calculateStatus(endDateStr) {
+    const now = new Date();
+    const endDate = new Date(endDateStr);
+    const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return { statusClass: 'expired', statusText: '❌ منتهية' };
+    if (diffDays <= 15) return { statusClass: 'warning', statusText: `⚠️ ${diffDays} يوم متبقٍ` };
+    return { statusClass: 'valid', statusText: `✅ ${diffDays} يوم متبقٍ` };
+  }
+
+  function renderTable(filter = "all") {
+    const table = document.getElementById('vehicleTable');
+    table.innerHTML = '';
+    documents.forEach((doc, index) => {
+      if (filter !== "all" && doc.company !== filter) return;
+      const status = calculateStatus(doc.end);
+      table.innerHTML += `
+        <tr class="${status.statusClass}">
+          <td>${doc.name}</td>
+          <td>${doc.model}</td>
+          <td>${doc.company}</td>
+          <td>${doc.type}</td>
+          <td>${doc.start}</td>
+          <td>${doc.end}</td>
+          <td>${status.statusText}</td>
+          <td><button onclick="editVehicle(${index})">✏️ تعديل</button></td>
+        </tr>`;
+    });
+  }
+
+  async function submitVehicle() {
+    const name = document.getElementById('vehicleName').value;
+    const model = document.getElementById('vehicleModel').value;
+    const company = document.getElementById('companySelect').value;
+    const type = document.getElementById('docType').value;
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+
+    if (!name || !model || !company || !start || !end || !type) {
+      alert("يرجى ملء جميع الحقول.");
+      return;
+    }
+
+    const docData = { name, model, company, type, start, end };
+
+    if (editIndex === -1) {
+      await addDoc(collection(db, "documents"), docData);
+    } else {
+      const docId = documents[editIndex].id;
+      await updateDoc(doc(db, "documents", docId), docData);
+      editIndex = -1;
+      document.getElementById('mainButton').innerText = "➕ إضافة الوثيقة";
+    }
+
+    loadDocs();
+    clearForm();
+  }
+
+  function editVehicle(index) {
+    const doc = documents[index];
+    document.getElementById('vehicleName').value = doc.name;
+    document.getElementById('vehicleModel').value = doc.model;
+    document.getElementById('companySelect').value = doc.company;
+    document.getElementById('docType').value = doc.type;
+    document.getElementById('startDate').value = doc.start;
+    document.getElementById('endDate').value = doc.end;
+    editIndex = index;
+    document.getElementById('mainButton').innerText = "💾 حفظ التعديل";
+  }
+
+  function clearForm() {
+    document.getElementById('vehicleName').value = '';
+    document.getElementById('vehicleModel').value = '';
+    document.getElementById('companySelect').selectedIndex = 0;
+    document.getElementById('docType').value = 'Assurance';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+  }
+
+  function renderCompanyFilters(selected = "all") {
+    currentFilter = selected;
+    const container = document.getElementById('companyFilters');
+    container.innerHTML = '';
+
+    const allBtn = document.createElement('button');
+    allBtn.textContent = "عرض الكل";
+    if (selected === "all") allBtn.classList.add("active");
+    allBtn.onclick = () => {
+      renderTable("all");
+      renderCompanyFilters("all");
+    };
+    container.appendChild(allBtn);
+
+    const uniqueCompanies = [...new Set(documents.map(doc => doc.company))];
+    uniqueCompanies.forEach(name => {
+      const btn = document.createElement("button");
+      btn.textContent = name;
+      if (selected === name) btn.classList.add("active");
+      btn.onclick = () => {
+        renderTable(name);
+        renderCompanyFilters(name);
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  async function loadDocs() {
+    const querySnapshot = await getDocs(collection(db, "documents"));
+    documents = [];
+    querySnapshot.forEach((docSnap) => {
+      documents.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    renderTable(currentFilter);
+    renderCompanyFilters(currentFilter);
+    loadCompaniesToSelect();
+  }
+
+  function loadCompaniesToSelect() {
+    const select = document.getElementById("companySelect");
+    select.innerHTML = "";
+    const uniqueCompanies = [...new Set(documents.map(doc => doc.company))];
+    uniqueCompanies.forEach(name => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.text = name;
+      select.appendChild(option);
+    });
+  }
+
+  window.onload = loadDocs;
+</script>
+
+</body>
+</html>
