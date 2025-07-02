@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
-<!-- saved from url=(0057)file:///C:/Users/salim/Downloads/formulaire_firebase.html -->
-<html lang="ar" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
   <title>نموذج تسجيل بـ Firebase</title>
-  <script src="./index_files/firebase-app-compat.js.download"></script>
-  <script src="./index_files/firebase-database-compat.js.download"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -50,7 +51,11 @@
       font-size: 16px;
       cursor: pointer;
     }
-    button:hover {
+    button:disabled {
+      background-color: #a5d6a7;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
       background-color: #388e3c;
     }
   </style>
@@ -61,15 +66,15 @@
     <h2>إدخال معلومات</h2>
     <form id="myForm">
       <label for="prenom">الاسم:</label>
-      <input type="text" id="prenom" required="">
+      <input type="text" id="prenom" required>
 
       <label for="nom">اللقب:</label>
-      <input type="text" id="nom" required="">
+      <input type="text" id="nom" required>
 
       <label for="date">تاريخ الازدياد:</label>
-      <input type="date" id="date" required="">
+      <input type="date" id="date" required>
 
-      <button type="submit">💾 حفظ و إدخال جديد</button>
+      <button type="submit" id="submitBtn">💾 حفظ و إدخال جديد</button>
     </form>
   </div>
 
@@ -87,28 +92,42 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    document.getElementById("myForm").addEventListener("submit", function(e) {
-      e.preventDefault();
+    const form = document.getElementById("myForm");
+    const submitBtn = document.getElementById("submitBtn");
 
-      const prenom = document.getElementById("prenom").value;
-      const nom = document.getElementById("nom").value;
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = "⏳ جاري الحفظ...";
+
+      const prenom = document.getElementById("prenom").value.trim();
+      const nom = document.getElementById("nom").value.trim();
       const date = document.getElementById("date").value;
 
+      if (!prenom || !nom || !date) {
+        alert("❗ جميع الحقول مطلوبة");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "💾 حفظ و إدخال جديد";
+        return;
+      }
+
       db.ref("formulaire").push({
-        prenom: prenom,
-        nom: nom,
-        date: date,
+        prenom,
+        nom,
+        date,
         timestamp: new Date().toISOString()
       }).then(() => {
         alert("✅ تم الحفظ بنجاح!");
-        document.getElementById("myForm").reset();
+        form.reset();
       }).catch((error) => {
         alert("❌ فشل في الحفظ: " + error.message);
         console.error(error);
+      }).finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "💾 حفظ و إدخال جديد";
       });
     });
   </script>
 
-
-
-</body></html>
+</body>
+</html>
