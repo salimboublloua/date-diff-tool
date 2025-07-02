@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>عرض البيانات من Firebase</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f9f9f9;
+      padding: 40px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 80%;
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #4caf50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📋 قائمة المسجلين</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>اللقب</th>
+        <th>تاريخ الازدياد</th>
+      </tr>
+    </thead>
+    <tbody id="dataTable">
+    </tbody>
+  </table>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3ZgeXLgdFHcgfCvmejfDAZ4HvIakwEic",
+      authDomain: "formulaire-salim.firebaseapp.com",
+      databaseURL: "https://formulaire-salim-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "formulaire-salim",
+      storageBucket: "formulaire-salim.appspot.com",
+      messagingSenderId: "661952722292",
+      appId: "1:661952722292:web:b829e751dd9f486dc7e821"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref("formulaire");
+
+    dbRef.on("value", (snapshot) => {
+      const table = document.getElementById("dataTable");
+      table.innerHTML = "";
+      snapshot.forEach(child => {
+        const data = child.val();
+        const row = `<tr>
+          <td>${data.prenom}</td>
+          <td>${data.nom}</td>
+          <td>${data.date}</td>
+        </tr>`;
+        table.innerHTML += row;
+      });
+    });
+  </script>
+
+</body>
+</html>

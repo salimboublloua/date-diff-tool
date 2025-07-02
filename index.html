@@ -1,9 +1,10 @@
-
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>نموذج تسجيل</title>
+<!-- saved from url=(0057)file:///C:/Users/salim/Downloads/formulaire_firebase.html -->
+<html lang="ar" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>نموذج تسجيل بـ Firebase</title>
+  <script src="./index_files/firebase-app-compat.js.download"></script>
+  <script src="./index_files/firebase-database-compat.js.download"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -60,45 +61,54 @@
     <h2>إدخال معلومات</h2>
     <form id="myForm">
       <label for="prenom">الاسم:</label>
-      <input type="text" id="prenom" required>
+      <input type="text" id="prenom" required="">
 
       <label for="nom">اللقب:</label>
-      <input type="text" id="nom" required>
+      <input type="text" id="nom" required="">
 
       <label for="date">تاريخ الازدياد:</label>
-      <input type="date" id="date" required>
+      <input type="date" id="date" required="">
 
       <button type="submit">💾 حفظ و إدخال جديد</button>
     </form>
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3ZgeXLgdFHcgfCvmejfDAZ4HvIakwEic",
+      authDomain: "formulaire-salim.firebaseapp.com",
+      databaseURL: "https://formulaire-salim-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "formulaire-salim",
+      storageBucket: "formulaire-salim.appspot.com",
+      messagingSenderId: "661952722292",
+      appId: "1:661952722292:web:b829e751dd9f486dc7e821"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     document.getElementById("myForm").addEventListener("submit", function(e) {
       e.preventDefault();
 
-      const url = "https://script.google.com/macros/s/AKfycbwL_sggY-mTxSf4Zh4Tx6IWGZqPyqlyDEaNOxWomPGGvKlHbzf5xw4rIut9aoLC-5cK_w/exec;
+      const prenom = document.getElementById("prenom").value;
+      const nom = document.getElementById("nom").value;
+      const date = document.getElementById("date").value;
 
-      const data = {
-        prenom: document.getElementById("prenom").value,
-        nom: document.getElementById("nom").value,
-        date: document.getElementById("date").value
-      };
-
-      fetch(url, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).then(response => {
+      db.ref("formulaire").push({
+        prenom: prenom,
+        nom: nom,
+        date: date,
+        timestamp: new Date().toISOString()
+      }).then(() => {
         alert("✅ تم الحفظ بنجاح!");
         document.getElementById("myForm").reset();
-      }).catch(error => {
-        alert("❌ حدث خطأ أثناء الحفظ!");
+      }).catch((error) => {
+        alert("❌ فشل في الحفظ: " + error.message);
         console.error(error);
       });
     });
   </script>
 
-</body>
-</html>
+
+
+</body></html>
